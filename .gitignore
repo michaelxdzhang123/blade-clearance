@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# Flask
+instance/
+*.sqlite
+*.sqlite.bak
+
+# Build artifacts
+uv.lock
+
+# blade-clearance
+__pycache__/
+
+# IDEs
+.vscode/
+.idea/
+#image data
+outputs/
+blade-box/
+blade-box-foggy/
+blade-box-heavy-foggy/
+blade-box-heavy-foggy-cv/
+data/
+dataset_blade/
+train-0904/
+unlabeled-0915-640/
+unlabeled-0915-640-e1/
+train-0915-640/
+blade_rtsp_system/output
+combined_dataset/
