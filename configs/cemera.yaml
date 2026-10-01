@@ -1,0 +1,21 @@
+camera:
+    model: DS-2CD8A47EWD-FJ-XZS
+    resolution:
+        width: 2560
+        height: 1440
+    fps: 25
+    max_tip_speed_mps: 83.0
+    shutter:
+        target: 0.0001
+        target_name: "1/10000"
+        minimum_name: "1/100000"
+    eis: false
+    zoom:
+       locked: true
+    focus:
+       locked: true
+    wdr:
+       mode: "off"
+    codec:
+       type: h264
+       gop: 25

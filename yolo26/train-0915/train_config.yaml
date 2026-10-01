@@ -1,0 +1,31 @@
+# 叶片检测模型训练配置
+# 用法: python train_from_videos.py --config train_config.yaml
+#
+# 流程: 读 10 个视频路径 → 每个视频重建背景 + 背景差分自动标注叶片框
+#       → 合并成 YOLO 数据集(按视频划分 train/val) → 训练 blade 类
+
+# ── 视频列表: 10 个叶片视频的路径 ──────────────────────────
+videos:
+  - data/training-data/test01-video-2026-08-28_134655_607.mp4
+  - data/training-data/1-rain.mp4
+  - data/training-data/2-snow.mp4
+  - data/training-data/3-foggy.mp4
+  - data/training-data/4-heavy-foggy.mp4
+  - data/training-data/5-192.168.45.122_01_20250823--北京阴天小雨2.mp4
+  - data/training-data/8-192.168.45.122_01_20250821--北京大雨转小雨.mp4
+  - data/training-data/9-192.168.45.122_01_20250821--北京大雨.mp4
+# ── 数据集生成参数 ──────────────────────────────────────
+dataset:
+  every: 4          # 每个视频内抽样间隔 (25fps → 6.25fps, 10720→2680帧/视频)
+  val_videos: 2     # 最后 2 个视频做 val(测模型对没见过的视频的泛化), 其余 train
+  output: train-0915-640/
+
+# ── 训练参数 ──do not use now────────────────────────────────────────
+train:
+  model: no  # COCO 预训练权重
+  epochs: 100
+  imgsz: 1024             # train_from_videos_seg.py 允许: 640 / 1024 / 1280
+  batch: 2             # 当前机器 CPU/内存限制
+  device: cpu
+  patience: 30
+  workers: 0

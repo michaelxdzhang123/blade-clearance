@@ -1,0 +1,19 @@
+roi:
+    full_frame:
+       width: 2560
+       height: 1440
+    tracking:
+      x: 500
+      y: 200
+      width: 1400
+      height: 1100
+
+    measurement:
+      x: 900
+      y: 500
+      width: 600
+      height: 600
+    margin:
+      warning_px: 30
+      invalid_px: 10
+

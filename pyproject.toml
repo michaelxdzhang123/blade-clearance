@@ -1,0 +1,64 @@
+[project]
+name = "blade-clearance"
+version = "0.1.0"
+description = "风机叶片净空监测：YOLO26 分割训练 + RTSP 实时叶片定位 + 半监督伪标签"
+requires-python = ">=3.13,<3.14"
+readme = "README.md"
+dependencies = [
+    # ── 深度学习 ──
+    "torch>=2.14.0",
+    "torchvision>=0.29.0",
+    "ultralytics>=8.4.0",
+    # ── 视觉 / 图像 ──
+    "opencv-python>=5.0.0",
+    "pillow>=12.0.0",
+    "matplotlib>=3.11.0",
+    # ── 数值 / 科学计算 ──
+    "numpy>=2.5.0",
+    "scipy>=1.18.0",
+    "shapely>=2.1.0",
+    # ── 视频 / 流媒体 ──
+    "av>=18.0.0",
+    # ── 配置 / 数据处理 ──
+    "PyYAML>=6.0.0",
+    "pandas>=3.0.0",
+    "tqdm>=4.70.0",
+    "requests>=2.32.0",
+    "psutil>=7.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0",
+    "pytest-cov>=7.0.0",
+]
+
+# torch / torchvision 必须从 PyTorch 官方 CUDA 13.0 (cu130) index 安装,
+# 否则 PyPI 默认给的是 CPU-only 版, 训练/推理会静默回退 CPU 或直接报 CUDA 不可用。
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu130" }
+torchvision = { index = "pytorch-cu130" }
+
+[tool.pytest.ini_options]
+testpaths = [
+    "blade_rtsp_system/tests",
+    "tests",
+]
+python_files = ["test_*.py"]
+addopts = "-v"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]  # 行长交给 formatter, 不强 lint
+
+[tool.ruff.format]
+quote-style = "double"

@@ -1,0 +1,14 @@
+# MediaMTX 精简配置 — 仅 RTSP TCP (8554), 供 TASK-1 本地测试
+# 禁用 rtmp/hls/webrtc/srt 与 UDP RTP, 避免端口冲突 (8000/1935/8888/8889)
+logLevel: info
+rtsp: true
+rtspTransports: [tcp]
+rtspAddress: :8554
+rtmp: false
+hls: false
+webrtc: false
+srt: false
+# 允许任意路径 publish (v1.21 默认 all_others 空条目会拒绝推流, 需显式声明 publisher)
+paths:
+  all_others:
+    source: publisher

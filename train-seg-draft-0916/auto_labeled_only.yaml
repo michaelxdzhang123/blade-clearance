@@ -1,0 +1,4 @@
+train: /home/mich/project/blade-clearance/train-0915-640/images/train
+val: /home/mich/project/blade-clearance/train-0915-640/images/val
+names:
+  0: blade

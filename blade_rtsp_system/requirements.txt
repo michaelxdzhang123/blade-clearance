@@ -1,0 +1,6 @@
+# blade_rtsp_system 依赖
+# 注意: 本项目实际运行在 blade-clearance 的 .venv 环境(已含 ultralytics/opencv/pyyaml)
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+PyYAML>=6.0

@@ -1,0 +1,39 @@
+# blade_rtsp_system 配置文件 — TASK-1 YOLO26 + RTSP 实时叶片定位
+#
+# 注意: 所有路径均为相对 blade_rtsp_system 目录的相对路径(除非以 / 开头)。
+# 核心代码中不允许写死绝对路径。
+
+model:
+  path: models/best.pt        # YOLO26 segmentation 权重
+  imgsz: 640                  # AI 推理尺寸(不允许改, Rule 2)
+  device: cpu                 # 0/1 = GPU 序号, "cpu" = CPU (本机无 GPU, 临时 cpu)
+  conf: 0.50                  # 置信度阈值
+  retina_masks: true          # 使用高分辨率 mask(更精确的 polygon)
+
+rtsp:
+  url: "rtsp://127.0.0.1:8554/blade"
+  reconnect_interval_sec: 2   # 断流后重连等待间隔
+  max_reconnect_attempts: 0   # 0 = 无限重连
+
+processing:
+  use_roi: false              # 是否裁剪 ROI 后推理
+  resize: [640, 640]          # 输入帧缩放目标 [w,h] (实验: 降到 640x640; 置空=不缩放)
+  roi:                        # 仅当 use_roi=true 时生效(原始帧坐标)
+    x1: 0
+    y1: 0
+    x2: 0
+    y2: 0
+  vid_stride: 1               # 逐帧处理(不允许默认跳帧, Rule 9)
+
+buffer:
+  strategy: latest            # 最新帧策略(新帧覆盖未处理的旧帧)
+  max_size: 1
+
+output:
+  save_csv: true
+  save_jsonl: true
+  save_video: false
+  show_window: false
+
+debug:
+  verbose: false
