@@ -37,3 +37,18 @@ output:
 
 debug:
   verbose: false
+
+# CLI --mode 优先；旧配置缺省仍使用 YOLO。
+detection:
+  mode: yolo
+
+# Classic CV 仅提供粗定位，不输出测量净空；参数按 processing.resize 后像素计。
+# 启动前 30 帧建立背景，建议使用空场景；镜头需固定，光照变化可能误检。
+classic:
+  warmup_frames: 30
+  trigger_threshold: 15
+  localize_threshold: 30
+  min_component_area: 200
+  top_k: 3
+  background_alpha: 0.01
+  max_foreground_fraction: 0.65

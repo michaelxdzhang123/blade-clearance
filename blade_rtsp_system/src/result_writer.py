@@ -24,7 +24,7 @@ logger = logging.getLogger("blade_rtsp.result_writer")
 
 CSV_FIELDS = [
     "timestamp", "frame_id", "frame_width", "frame_height",
-    "loop_ms",
+    "loop_ms", "detector_mode", "detector_status", "confidence_kind", "frames_skipped",
     "blade_detected", "blade_count",
     "instance_id", "confidence",
     "bbox_x1", "bbox_y1", "bbox_x2", "bbox_y2",
@@ -55,6 +55,7 @@ class ResultWriter:
         frame_result = {frame_id, timestamp, frame_width, frame_height,
                         loop_ms, blade_detected, blade_count, blades:[...]}
         """
+        first_new_row = len(self._csv_rows)
         # JSONL: 缓冲完整结构 (含 polygon), 只 append 到 list
         self._jsonl_lines.append(json.dumps(frame_result, ensure_ascii=False))
 
@@ -94,6 +95,13 @@ class ResultWriter:
                     "center_x": f"{cx:.2f}", "center_y": f"{cy:.2f}",
                     "mask_area": f"{b['mask_area']:.1f}",
                 })
+
+        for row in self._csv_rows[first_new_row:]:
+            diagnostics = frame_result.get("diagnostics", {})
+            row.update(detector_mode=frame_result.get("detector_mode", "yolo"),
+                       detector_status=diagnostics.get("status", ""),
+                       confidence_kind=diagnostics.get("confidence_kind", "model_confidence"),
+                       frames_skipped=frame_result.get("frames_skipped", 0))
 
     def close(self):
         """一次性把全部缓冲写入文件 (JSONL + CSV), 写后清空缓冲。"""

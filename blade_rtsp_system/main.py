@@ -3,7 +3,7 @@
 """
 main.py — TASK-1 主入口 (TASK-1 第 28 节工作流)
 
-  RTSP → Frame → ROI → YOLO26 best.pt(640) → Blade Mask
+  RTSP → Frame → ROI → YOLO26 / Classic CV → Blade Mask
        → Raw/Simple Polygon → Original Coordinate → CSV/JSONL/Visualization
 
 用法:
@@ -37,7 +37,7 @@ from src.frame_buffer import FrameBuffer  # noqa: E402       # 最新帧缓冲 (
 from src.result_writer import ResultWriter  # noqa: E402     # 结果写出 CSV/JSONL
 from src.rtsp_reader import RTSPReader  # noqa: E402         # RTSP 读帧 + 断流重连
 from src.visualizer import Visualizer  # noqa: E402          # 实时窗口可视化
-from src.yolo_detector import YOLODetector  # noqa: E402     # YOLO 模型加载 + 单帧推理
+
 
 logger = logging.getLogger("blade_rtsp.main")  # 本模块的 logger 实例
 
@@ -130,13 +130,14 @@ def main() -> int:
 
     返回 0=正常退出, 1=初始化失败(模型缺失/加载失败/视频源打开失败)。
     """
-    parser = argparse.ArgumentParser(description="TASK-1 YOLO26 RTSP 叶片定位")  # 参数解析器
-    parser.add_argument("--config", default="config/config.yaml")                # --config: 配置文件路径
+    parser = argparse.ArgumentParser(description="RTSP 叶片定位: YOLO / Classic CV")  # 参数解析器
+    parser.add_argument("--config", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "config/config.yaml"))                # --config: 配置文件路径
     parser.add_argument("--max-duration", type=float, default=0.0,               # --max-duration: 定时长跑
                         help="最大运行秒数 (0=不限, 用于 Gate 6 定时长跑)")
     parser.add_argument("--resize", nargs=2, type=int, metavar=("W", "H"),       # --resize: 输入缩放
                         default=None,
                         help="输入帧缩放 W H (覆盖 config processing.resize; 省略=用 config)")
+    parser.add_argument("--mode", choices=("yolo", "classic"), help="检测后端 (覆盖 detection.mode; 默认 yolo)")
     args = parser.parse_args()                  # 解析命令行参数
 
     cfg = load_config(args.config)              # 读取配置文件为 dict
@@ -155,29 +156,30 @@ def main() -> int:
     log_handler = setup_logging(log_dir)        # 初始化缓冲日志, 拿到 handler
     logger.info("=== blade_rtsp_system 启动 ===")  # 启动日志
 
-    # ── 模型 (只加载一次, 禁止每帧重建) ──
-    model_cfg = cfg["model"]                    # 取 model 配置段
-    model_path = resolve_path(root_dir, model_cfg["path"])  # 权重文件绝对路径
-    if not os.path.exists(model_path):          # 权重不存在则直接报错退出
-        logger.error("模型文件不存在: %s", model_path)
-        log_handler.flush_to_file(log_path)     # 早退也要落盘
-        return 1                                # 返回 1 = 初始化失败
-    logger.info("模型路径: %s", model_path)     # 记录权重路径
-
-    # YOLODetector: imgsz=640(推理尺寸, Rule 2 固定) / conf=0.5 / device / retina_masks
-    detector = YOLODetector(                    # 构造检测器 (此时只存参数, 未加载)
-        model_path=model_path,                  # 权重路径
-        imgsz=int(model_cfg.get("imgsz", 640)), # 推理尺寸
-        conf=float(model_cfg.get("conf", 0.5)), # 置信度阈值
-        device=model_cfg.get("device", 0),      # 设备 (0/1=GPU, "cpu"=CPU)
-        retina_masks=bool(model_cfg.get("retina_masks", True)),  # 高分辨率 mask
-    )
-    try:                                        # 加载模型 (失败会抛异常)
-        detector.load()
-    except Exception as exc:  # noqa: BLE001    # 捕获加载异常
-        logger.error("模型加载失败: %s", exc)
-        log_handler.flush_to_file(log_path)     # 早退也要落盘
-        return 1                                # 返回 1 = 初始化失败
+    mode = args.mode or cfg.get("detection", {}).get("mode", "yolo")
+    if mode not in ("yolo", "classic"):
+        parser.error("detection.mode must be yolo or classic")
+    logger.info("检测模式: %s", mode)
+    print(f"检测模式: {mode}", flush=True)
+    try:
+        if mode == "yolo":
+            from src.yolo_detector import YOLODetector
+            model_cfg = cfg["model"]
+            model_path = resolve_path(root_dir, model_cfg["path"])
+            if not os.path.isfile(model_path):
+                raise FileNotFoundError(f"模型文件不存在: {model_path}")
+            detector = YOLODetector(model_path=model_path,
+                imgsz=int(model_cfg.get("imgsz", 640)), conf=float(model_cfg.get("conf", .5)),
+                device=model_cfg.get("device", "cpu"), retina_masks=bool(model_cfg.get("retina_masks", True)))
+            detector.load()
+        else:
+            from src.classic_detector import ClassicDetector
+            detector = ClassicDetector(cfg.get("classic", {}))
+    except Exception as exc:
+        logger.exception("检测器初始化失败: %s", exc)
+        print(f"检测器初始化失败: {exc}", file=sys.stderr)
+        log_handler.flush_to_file(log_path)
+        return 1
 
     # ── 输出 (CSV / JSONL 二选一或都开) ──
     save_csv = bool(out_cfg.get("save_csv", True))     # 是否写 CSV
@@ -201,8 +203,8 @@ def main() -> int:
     roi = proc_cfg.get("roi", {})               # ROI 配置 (x1/y1/x2/y2)
 
     # roi_offset = ROI 左上角 (x1,y1): mask/bbox 是 ROI 局部坐标时, 用此偏移平移回原图
-    roi_x1 = float(roi.get("x1", 0))            # ROI 左上角 x
-    roi_y1 = float(roi.get("y1", 0))            # ROI 左上角 y
+    roi_x1 = int(roi.get("x1", 0))            # ROI 左上角 x
+    roi_y1 = int(roi.get("y1", 0))            # ROI 左上角 y
     roi_offset = (roi_x1, roi_y1)               # 打包成偏移元组
 
     # 输入缩放 (可选): 把原始帧缩到 resize 目标分辨率后再推理, 降低 mask 上采样等开销
@@ -288,6 +290,7 @@ def main() -> int:
     inference_times = []                          # 推理耗时列表 (ms)
     loop_times = []                               # 主循环本帧耗时列表 (ms)
     t0 = time.time()                              # 启动时刻 (用于 FPS/定时长跑)
+    previous_fid = None
     last_report = t0                              # 上次周期统计时刻
 
     # SIGTERM 也走优雅退出 (复用 except KeyboardInterrupt → finally → 落盘),
@@ -299,6 +302,8 @@ def main() -> int:
     try:
         # ── 主线程推理循环 (Thread 2) ──
         while running.is_set():                   # 只要 Reader 还在运行
+            if args.max_duration > 0 and time.time() - t0 >= args.max_duration:
+                break
             # 取最新帧 (旧帧可能已被覆盖/丢弃, 见 frame_buffer 的 dropped 统计)
             frame, ts, fid = buffer.get_latest()  # 取最新帧 → (帧, 时间戳, 帧序号)
             if frame is None:                     # 暂无可用帧 (buffer 空)
@@ -315,19 +320,22 @@ def main() -> int:
             if use_roi:                           # 启用 ROI
                 roi_x2 = int(roi.get("x2", frame.shape[1]))  # ROI 右下角 x (默认到帧右边界)
                 roi_y2 = int(roi.get("y2", frame.shape[0]))  # ROI 右下角 y (默认到帧下边界)
+                if not (0 <= roi_x1 < roi_x2 <= frame.shape[1] and 0 <= roi_y1 < roi_y2 <= frame.shape[0]):
+                    raise ValueError("ROI must be nonempty and within the processed frame")
                 roi_frame = frame[roi_y1:roi_y2, roi_x1:roi_x2]  # 裁出 ROI 子图
                 infer_input = roi_frame           # 用 ROI 子图推理
             else:                                 # 不用 ROI
                 infer_input = frame               # 直接用整帧推理
 
-            # YOLO 推理: 返回 (result, 推理耗时 ms)
+            # 后端处理: YOLO Results 或 Classic detection dict, 加处理耗时 ms
             result, inf_ms = detector.predict(infer_input)  # 单帧分割推理
             inference_times.append(inf_ms)        # 记录本次推理耗时
 
             # blade 提取 + 定位 (坐标恢复到原始帧)
             #   extract_blades: 从 result 筛出 class_name="blade" 的 instances
             #   locate_blades:   mask→polygon + ROI→原图坐标, 输出 bbox/center/polygon/叶尖候选
-            detection = blade_segmenter.extract_blades(result, class_name="blade")  # 提取 blade 实例
+            detection = (blade_segmenter.extract_blades(result, class_name="blade")
+                         if mode == "yolo" else result)  # 提取 blade 实例
 
             # 传给 locator 的坐标偏移: 启用 ROI 时用 roi_offset, 否则零偏移
             offset = roi_offset if use_roi else (0.0, 0.0)  # 决定坐标恢复用的平移量
@@ -341,7 +349,7 @@ def main() -> int:
             now = time.time()                     # 当前时刻
             # FPS = 1 / 运行耗时; 第一帧(fid<=1)尚无时间差, 记 0 避免除零
             if fid > 1:                           # (fid 已在上面 assert 非 None)
-                fps = 1.0 / max(now - t0, 1e-6)   # FPS = 1 / 总运行耗时 (防止除零)
+                fps = buffer.stats()["processed_frames"] / max(now - t0, 1e-6)   # FPS = 1 / 总运行耗时 (防止除零)
             else:                                 # 首帧或 fid 缺失
                 fps = 0.0                         # FPS 记 0
             annotated = vis.draw(frame, fid, located, fps)  # 在帧上画标注
@@ -353,6 +361,10 @@ def main() -> int:
 
             # 组装单帧结果并写入 CSV/JSONL (含 loop_ms)
             fr = build_frame_result(fid, ts, frame_w, frame_h, detection, located, loop_ms)  # 组装结果 dict
+            fr["detector_mode"] = mode
+            fr["diagnostics"] = detection.get("diagnostics", {})
+            fr["frames_skipped"] = max(0, fid - previous_fid - 1) if previous_fid is not None else 0
+            previous_fid = fid
             if writer:                            # 有 writer 才写
                 writer.write(fr)                  # 写出本帧结果
 
