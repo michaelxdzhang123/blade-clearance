@@ -72,3 +72,62 @@
 2026/10/01 20:22:54 INF [RTSP] [session f79f52aa] is reading from path 'blade', with TCP, 1 track (H264)
 2026/10/01 20:23:59 INF [RTSP] [session f79f52aa] destroyed: torn down by 127.0.0.1:60480
 2026/10/01 20:23:59 INF [RTSP] [conn 127.0.0.1:60480] closed: EOF
+2026/10/02 05:42:42 INF [RTSP] [conn 127.0.0.1:37604] closed: read tcp 127.0.0.1:8554->127.0.0.1:37604: i/o timeout
+2026/10/02 05:42:49 INF [RTSP] [session 6a80d944] destroyed: not in use
+2026/10/02 05:43:36 INF [RTSP] [conn 127.0.0.1:60074] opened
+2026/10/02 05:43:36 INF [RTSP] [session 030dbbee] created by 127.0.0.1:60074
+2026/10/02 05:43:36 INF [path blade] stream is available and online, 1 track (H264)
+2026/10/02 05:43:36 INF [RTSP] [session 030dbbee] is publishing to path 'blade'
+2026/10/02 05:43:36 INF [path blade] RTP packets are too big (1460 > 1440), remuxing them into smaller ones
+2026/10/02 19:21:20 INF [RTSP] [conn 127.0.0.1:60074] closed: read tcp 127.0.0.1:8554->127.0.0.1:60074: i/o timeout
+2026/10/02 19:21:27 INF [RTSP] [session 030dbbee] destroyed: not in use
+2026/10/02 19:23:00 INF [RTSP] [conn 127.0.0.1:35412] opened
+2026/10/02 19:23:01 INF [RTSP] [session 4704c079] created by 127.0.0.1:35412
+2026/10/02 19:23:01 INF [path blade] stream is available and online, 1 track (H264)
+2026/10/02 19:23:01 INF [RTSP] [session 4704c079] is publishing to path 'blade'
+2026/10/02 19:23:01 INF [path blade] RTP packets are too big (1460 > 1440), remuxing them into smaller ones
+2026/10/09 21:41:27 INF MediaMTX v1.21.1, linux, amd64
+2026/10/09 21:41:27 INF configuration loaded from /tmp/mp4_to_rtsp_mediamtx.yml
+2026/10/09 21:41:27 INF [RTSP] started with listeners on :8554 (TCP/RTSP)
+2026/10/09 21:41:27 INF [MoQ] started with listeners on :8892 (TCP/HTTP2), :8892 (UDP/HTTP3), :8893 (UDP/QUIC)
+2026/10/09 21:41:28 INF [RTSP] [conn 127.0.0.1:51810] opened
+2026/10/09 21:41:28 INF [RTSP] [session 3a05668f] created by 127.0.0.1:51810
+2026/10/09 21:41:28 INF [path blade] stream is available and online, 1 track (H264)
+2026/10/09 21:41:28 INF [RTSP] [session 3a05668f] is publishing to path 'blade'
+2026/10/09 21:41:28 INF [path blade] RTP packets are too big (1460 > 1440), remuxing them into smaller ones
+2026/10/09 21:41:35 INF [RTSP] [conn 127.0.0.1:51824] opened
+2026/10/09 21:41:35 INF [RTSP] [session d0768baa] created by 127.0.0.1:51824
+2026/10/09 21:41:35 INF [RTSP] [session d0768baa] is reading from path 'blade', with TCP, 1 track (H264)
+2026/10/09 21:50:08 INF [RTSP] [session d0768baa] destroyed: torn down by 127.0.0.1:51824
+2026/10/09 21:50:08 INF [RTSP] [conn 127.0.0.1:51824] closed: read tcp 127.0.0.1:8554->127.0.0.1:51824: read: connection reset by peer
+2026/10/09 21:50:09 INF [RTSP] [session 3a05668f] destroyed: torn down by 127.0.0.1:51810
+2026/10/09 21:50:09 INF [RTSP] [conn 127.0.0.1:51810] closed: EOF
+2026/10/09 21:50:09 INF shutting down gracefully
+2026/10/09 21:50:09 INF [MoQ] closing
+2026/10/09 21:50:09 INF [RTSP] closing
+2026/10/09 21:50:09 INF waiting for running hooks
+2026/10/11 04:19:00 INF MediaMTX v1.21.1, linux, amd64
+2026/10/11 04:19:00 INF configuration loaded from /tmp/mp4_to_rtsp_mediamtx.yml
+2026/10/11 04:19:00 INF [RTSP] started with listeners on :8554 (TCP/RTSP)
+2026/10/11 04:19:00 INF [MoQ] started with listeners on :8892 (TCP/HTTP2), :8892 (UDP/HTTP3), :8893 (UDP/QUIC)
+2026/10/11 04:19:00 INF [RTSP] [conn 127.0.0.1:37994] opened
+2026/10/11 04:19:00 INF [RTSP] [session 106878ad] created by 127.0.0.1:37994
+2026/10/11 04:19:00 INF [path blade] stream is available and online, 1 track (H264)
+2026/10/11 04:19:00 INF [RTSP] [session 106878ad] is publishing to path 'blade'
+2026/10/11 04:19:00 INF [path blade] RTP packets are too big (1460 > 1440), remuxing them into smaller ones
+2026/10/11 04:20:40 INF [RTSP] [conn 127.0.0.1:44766] opened
+2026/10/11 04:20:40 INF [RTSP] [session 5a1646c7] created by 127.0.0.1:44766
+2026/10/11 04:20:40 INF [RTSP] [session 5a1646c7] is reading from path 'blade', with TCP, 1 track (H264)
+2026/10/11 04:21:20 INF [RTSP] [session 5a1646c7] destroyed: torn down by 127.0.0.1:44766
+2026/10/11 04:21:20 INF [RTSP] [conn 127.0.0.1:44766] closed: EOF
+2026/10/11 04:22:09 INF [RTSP] [conn 127.0.0.1:52286] opened
+2026/10/11 04:22:09 INF [RTSP] [session 7ea7310e] created by 127.0.0.1:52286
+2026/10/11 04:22:09 INF [RTSP] [session 7ea7310e] is reading from path 'blade', with TCP, 1 track (H264)
+2026/10/11 04:55:26 INF [RTSP] [session 7ea7310e] destroyed: torn down by 127.0.0.1:52286
+2026/10/11 04:55:26 INF [RTSP] [conn 127.0.0.1:52286] closed: read tcp 127.0.0.1:8554->127.0.0.1:52286: read: connection reset by peer
+2026/10/11 04:55:29 INF [RTSP] [conn 127.0.0.1:37994] closed: read tcp 127.0.0.1:8554->127.0.0.1:37994: read: connection reset by peer
+2026/10/11 04:55:29 INF [RTSP] [session 106878ad] destroyed: torn down by 127.0.0.1:37994
+2026/10/11 04:55:29 INF shutting down gracefully
+2026/10/11 04:55:29 INF [MoQ] closing
+2026/10/11 04:55:29 INF [RTSP] closing
+2026/10/11 04:55:29 INF waiting for running hooks

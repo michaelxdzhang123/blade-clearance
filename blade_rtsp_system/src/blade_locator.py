@@ -25,17 +25,21 @@ def _compute_center(bbox) -> list:
 
 
 def blade_tip_candidate(raw_polygon: list):
-    """叶尖候选点 (candidate, 非真实物理叶尖)。
+    """叶尖 = 叶片顶部 (y 最小) 的尖端。
 
-    规则: blade polygon 中 y 坐标最大的顶点(叶片自由端触底端)。
-    这继承自 opencv/refine_blade_tip.py 的几何先验, 明确标记为候选。
-    返回 (x, y) 或 None。
+    本视频叶片斜向横扫: 自由端(叶尖)在顶部且最窄(锥形尖端),
+    根部(连轮毂)在底部较宽。取 y 最小的顶部点集, 返回其中心点。
+
+    之前用「y 最大顶点」, 落在叶片底边(侧边)或根部; 正确叶尖在顶部。
     """
-    if not raw_polygon:
+    if not raw_polygon or len(raw_polygon) < 3:
         return None
-    pts = np.asarray(raw_polygon, dtype=np.float64)
-    idx = int(np.argmax(pts[:, 1]))
-    return [float(pts[idx, 0]), float(pts[idx, 1])]
+    pts = np.asarray(raw_polygon, dtype=np.float64)   # polygon 顶点 (轮廓点)
+    ymin = pts[:, 1].min()                            # 顶部 y 最小
+    top = pts[pts[:, 1] == ymin]                      # 精确取顶部(y 最小)点
+    if len(top) == 0:                                 # 浮点误差兜底
+        top = pts[np.argmin(pts[:, 1])].reshape(1, -1)
+    return [float(top[:, 0].mean()), float(ymin)]     # 顶部尖端(最上点, x 取中心)
 
 
 def locate_blades(blade_instances: list, roi_offset=(0.0, 0.0),

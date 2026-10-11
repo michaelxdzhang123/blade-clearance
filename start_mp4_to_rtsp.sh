@@ -20,7 +20,8 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
 
 # ── 输入参数 (按需修改) ────────────────────────────────────────────────
-INPUT="data/training-data/test01-video-2026-08-28_134655_607.mp4"       # 本地 MP4 文件路径
+#INPUT="data/training-data/test01-video-2026-08-28_134655_607.mp4"       # 本地 MP4 文件路径
+INPUT="data/training-data/test02-closing-2-tower-three-cycles.mp4" # three closer
 RTSP_URL="rtsp://127.0.0.1:8554/blade"      # 推流目标 RTSP 地址
 WITH_SERVER=1                               # 1=同时拉起 MediaMTX 服务器 (自包含模式)
 RE_ENCODE=0                                 # 1=强制 libx264 转码 (原编码不兼容 RTSP 时)
